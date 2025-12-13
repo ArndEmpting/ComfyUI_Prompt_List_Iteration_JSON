@@ -36,6 +36,7 @@ class ComfyUI_Prompt_JSON:
         - 'Prompt List': A dropdown to select existing prompts or create a new one.
         - 'New List Name': A string input for creating a new list (used when creating a new list).
         - 'Random': A boolean to enable/disable random prompt selection.
+        - 'Sequential': A boolean to enable/disable sequential prompt selection.
         - 'Overwrite': A boolean to allow overwriting an existing prompt.
         - 'Console Log': A boolean to enable logging to the console.
         - 'Prompt Name': A string for naming the current prompt.
@@ -50,7 +51,7 @@ class ComfyUI_Prompt_JSON:
                 "Prompt List": (prompt_files, ),
                 "New List Name": ("STRING", {"multiline": False}),
                 "Random": BOOLEAN,
-                "Sequentiell": BOOLEAN,                
+                "Sequential": BOOLEAN,                
                 "Overwrite": BOOLEAN,
                 "Console Log": BOOLEAN,
                 "Prompt Name": ("STRING", {"multiline": False}),
@@ -74,7 +75,7 @@ class ComfyUI_Prompt_JSON:
         """
         prompt_list_name = kwargs.get("Prompt List", "").strip()
         new_list_name = kwargs.get("New List Name", "").strip()
-        sequential_selection = kwargs.get("Sequentiell", False)
+        sequential_selection = kwargs.get("Sequential", False)
         random_selection = kwargs.get("Random", False)
         overwrite = kwargs.get("Overwrite", False)
         console_log = kwargs.get("Console Log", False)
@@ -186,7 +187,7 @@ class ComfyUI_Prompt_JSON:
             print(format_with_bg_multiline(f"NEGATIVE: {negative_prompt}", "40;31"))
 
         # Save the updated list back to the file
-        self.save_json(prompt_list_path, data)
+        #self.save_json(prompt_list_path, data)
 
         # Return the processed positive prompt, negative prompt, and full list as JSON
         full_list = json.dumps(data, ensure_ascii=False, indent=4)
