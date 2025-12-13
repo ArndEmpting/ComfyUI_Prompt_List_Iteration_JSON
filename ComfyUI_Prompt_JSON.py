@@ -8,6 +8,8 @@ import random
 BOOLEAN = ("BOOLEAN", {"default": False})
 
 class ComfyUI_Prompt_JSON:
+    _last_prompt_used = None 
+    _last_list_used = None
     def __init__(self):
         # Define the folder for storing prompts
         self.prompt_list_folder = os.path.join(folder_paths.base_path, "Prompt")
@@ -48,6 +50,7 @@ class ComfyUI_Prompt_JSON:
                 "Prompt List": (prompt_files, ),
                 "New List Name": ("STRING", {"multiline": False}),
                 "Random": BOOLEAN,
+                "Sequentiell": BOOLEAN,                
                 "Overwrite": BOOLEAN,
                 "Console Log": BOOLEAN,
                 "Prompt Name": ("STRING", {"multiline": False}),
@@ -57,8 +60,8 @@ class ComfyUI_Prompt_JSON:
         }
 
     # Define return types for the process function
-    RETURN_TYPES = ("STRING", "STRING", "STRING")
-    RETURN_NAMES = ("positive", "negative", "full list")
+    RETURN_TYPES = ("STRING", "STRING", "STRING", "STRING")
+    RETURN_NAMES = ("positive", "negative", "prompt_name", "full list")
     FUNCTION = "process"
     CATEGORY = "prompt"
 
@@ -71,13 +74,15 @@ class ComfyUI_Prompt_JSON:
         """
         prompt_list_name = kwargs.get("Prompt List", "").strip()
         new_list_name = kwargs.get("New List Name", "").strip()
+        sequential_selection = kwargs.get("Sequentiell", False)
         random_selection = kwargs.get("Random", False)
         overwrite = kwargs.get("Overwrite", False)
         console_log = kwargs.get("Console Log", False)
-        prompt_name = kwargs.get("Prompt Name", "").strip()
+        ui_prompt_name_input = kwargs.get("Prompt Name", "").strip()
         positive_prompt = kwargs.get("Positive Prompt", "").strip()
         negative_prompt = kwargs.get("Negative Prompt", "").strip()
 
+        prompt_name = ui_prompt_name_input
         # Handle "New List" option: Create a new list if selected
         if prompt_list_name == "New List":
             if not new_list_name:
@@ -88,12 +93,52 @@ class ComfyUI_Prompt_JSON:
         prompt_list_path = os.path.join(self.prompt_list_folder, prompt_list_name)
         data = self.load_json(prompt_list_path)
 
+        # 1. Prüfen, ob die Liste gewechselt wurde. Wenn ja, Zustand zurücksetzen.
+        if ComfyUI_Prompt_JSON._last_list_used != prompt_list_name:
+            ComfyUI_Prompt_JSON._last_prompt_used = None
+            ComfyUI_Prompt_JSON._last_list_used = prompt_list_name
+
+        # 2. Logik für die Auswahl des prompt_name
+        current_prompt_name = None
+
         # Handle random selection of a prompt from the list
         if random_selection:
             if not data:
                 raise ValueError("The selected prompt list is empty or invalid.")
             # Choose a random prompt name and fetch its details
             prompt_name = random.choice(list(data.keys()))
+            positive_prompt = data[prompt_name]["positive"]
+            negative_prompt = data[prompt_name]["negative"]
+        elif sequential_selection:
+            # Wenn es das erste Mal ist ODER der UI-Input gesetzt ist (manueller Startpunkt)
+            if ComfyUI_Prompt_JSON._last_prompt_used is None or ui_prompt_name_input:
+                # Startpunkt ist entweder der UI-Input oder der allererste Schlüssel
+                prompt_name = ui_prompt_name_input or next(iter(data.keys()), None)
+            else:
+                # Wir suchen den Nachfolger des zuletzt verwendeten Prompts
+                target_key = ComfyUI_Prompt_JSON._last_prompt_used
+                keys_iterator = iter(data.keys())
+                
+                # Iterieren, bis wir den alten Prompt finden
+                for key in keys_iterator:
+                    if key == target_key:
+                        try:
+                            # Der nächste ist der, den wir jetzt benutzen
+                            prompt_name = next(keys_iterator)
+                            break
+                        except StopIteration:
+                            # Wenn wir am Ende der Liste waren, springen wir zum Anfang zurück
+                            prompt_name = next(iter(data.keys()))
+                            break
+                
+                # Falls der alte Schlüssel aus der Liste gelöscht wurde
+                if prompt_name is None:
+                     prompt_name = next(iter(data.keys()), None)
+
+            if prompt_name is None:
+                 raise ValueError("The selected prompt list is empty.")
+
+                    
             positive_prompt = data[prompt_name]["positive"]
             negative_prompt = data[prompt_name]["negative"]
         else:
@@ -120,6 +165,11 @@ class ComfyUI_Prompt_JSON:
                     ("negative", negative_prompt),
                 ])
 
+
+        # Aktualisiere den Zustand für die nächste Ausführung
+        if sequential_selection or random_selection:
+            ComfyUI_Prompt_JSON._last_prompt_used = prompt_name
+            
         # Optionally log the prompt details to the console
         if console_log:
             import shutil
@@ -136,11 +186,11 @@ class ComfyUI_Prompt_JSON:
             print(format_with_bg_multiline(f"NEGATIVE: {negative_prompt}", "40;31"))
 
         # Save the updated list back to the file
-        self.save_json(prompt_list_path, data)
+        #self.save_json(prompt_list_path, data)
 
         # Return the processed positive prompt, negative prompt, and full list as JSON
         full_list = json.dumps(data, ensure_ascii=False, indent=4)
-        return positive_prompt, negative_prompt, full_list
+        return positive_prompt, negative_prompt, prompt_name, full_list
 
     @classmethod
     def IS_CHANGED(cls, *args, **kwargs):
