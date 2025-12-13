@@ -7,6 +7,7 @@ This repository provides a custom node for [ComfyUI](https://github.com/comfyano
 - 📂 **JSON-based prompt management**: Prompts are stored in individual JSON files for easy editing and retrieval.
 - 🔄 **Add or update prompts**: Supports creating new prompt lists, updating existing prompts, and overwriting as needed.
 - 🎲 **Random prompt selection**: Choose a random prompt from an existing list with ease.
+- ➡️ **Sequential prompt selection**: Iterate through the prompts from an existing list.
 - 🖥️ **Console logging**: Optionally logs prompt details with formatted outputs for debugging or verification.
 - 🛠️ **Automatic file management**: Ensures required directories and files are created automatically.
 
@@ -46,6 +47,7 @@ This repository provides a custom node for [ComfyUI](https://github.com/comfyano
 - **Positive Prompt** (required for new prompts): The positive description of the prompt.
 - **Negative Prompt** (optional): The negative description of the prompt.
 - **Random** (boolean, default `False`): Enable random selection of prompts from the list.
+- **Sequential** (boolean, default `False`): Enable sequential selection of prompts from the list. Will start with prompt as in prompt name or at the beginning of the list. Will restart at beginning if end of list is reached.
 - **Overwrite** (boolean, default `False`): Whether to overwrite an existing prompt with the same name.
 - **Console Log** (boolean, default `False`): Prints prompt details to the console for debugging.
 
@@ -53,6 +55,7 @@ This repository provides a custom node for [ComfyUI](https://github.com/comfyano
 
 - **Positive Prompt**: The saved or retrieved positive prompt.
 - **Negative Prompt**: The saved or retrieved negative prompt.
+- **Prompt Name**: The name of the used prompt. Can be useful as prefix input for the save image node.
 - **Full List**: The entire prompt list as a JSON string.
 
 ### Example Workflow
