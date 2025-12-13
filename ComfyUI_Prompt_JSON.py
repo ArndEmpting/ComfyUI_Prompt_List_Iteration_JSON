@@ -186,7 +186,7 @@ class ComfyUI_Prompt_JSON:
             print(format_with_bg_multiline(f"NEGATIVE: {negative_prompt}", "40;31"))
 
         # Save the updated list back to the file
-        #self.save_json(prompt_list_path, data)
+        self.save_json(prompt_list_path, data)
 
         # Return the processed positive prompt, negative prompt, and full list as JSON
         full_list = json.dumps(data, ensure_ascii=False, indent=4)
