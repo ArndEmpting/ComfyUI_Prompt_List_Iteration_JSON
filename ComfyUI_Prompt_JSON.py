@@ -118,7 +118,7 @@ class ComfyUI_Prompt_JSON:
                 # Startpunkt ist entweder der UI-Input oder der allererste Schlüssel
                 prompt_name = ui_prompt_name_input or next(iter(data.keys()), None)
             else:
-                if next:
+                if not next:
                     prompt_name = ComfyUI_Prompt_JSON._last_prompt_used
                 else:
                         
