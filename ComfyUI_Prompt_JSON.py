@@ -52,7 +52,7 @@ class ComfyUI_Prompt_JSON:
                 "New List Name": ("STRING", {"multiline": False}),
                 "Random": BOOLEAN,
                 "Sequential": BOOLEAN,     
-                "Next": Boolean
+                "Next": BOOLEAN,
                 "Overwrite": BOOLEAN,
                 "Console Log": BOOLEAN,
                 "Prompt Name": ("STRING", {"multiline": False}),
