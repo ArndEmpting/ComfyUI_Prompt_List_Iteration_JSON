@@ -51,7 +51,8 @@ class ComfyUI_Prompt_JSON:
                 "Prompt List": (prompt_files, ),
                 "New List Name": ("STRING", {"multiline": False}),
                 "Random": BOOLEAN,
-                "Sequential": BOOLEAN,                
+                "Sequential": BOOLEAN,     
+                "Next": Boolean
                 "Overwrite": BOOLEAN,
                 "Console Log": BOOLEAN,
                 "Prompt Name": ("STRING", {"multiline": False}),
@@ -77,6 +78,7 @@ class ComfyUI_Prompt_JSON:
         new_list_name = kwargs.get("New List Name", "").strip()
         sequential_selection = kwargs.get("Sequential", False)
         random_selection = kwargs.get("Random", False)
+        next_selection = kwargs.get("Next", False)
         overwrite = kwargs.get("Overwrite", False)
         console_log = kwargs.get("Console Log", False)
         ui_prompt_name_input = kwargs.get("Prompt Name", "").strip()
@@ -116,21 +118,25 @@ class ComfyUI_Prompt_JSON:
                 # Startpunkt ist entweder der UI-Input oder der allererste Schlüssel
                 prompt_name = ui_prompt_name_input or next(iter(data.keys()), None)
             else:
-                # Wir suchen den Nachfolger des zuletzt verwendeten Prompts
-                target_key = ComfyUI_Prompt_JSON._last_prompt_used
-                keys_iterator = iter(data.keys())
-                
-                # Iterieren, bis wir den alten Prompt finden
-                for key in keys_iterator:
-                    if key == target_key:
-                        try:
-                            # Der nächste ist der, den wir jetzt benutzen
-                            prompt_name = next(keys_iterator)
-                            break
-                        except StopIteration:
-                            # Wenn wir am Ende der Liste waren, springen wir zum Anfang zurück
-                            prompt_name = next(iter(data.keys()))
-                            break
+                if next:
+                    prompt_name = ComfyUI_Prompt_JSON._last_prompt_used
+                else:
+                        
+                    # Wir suchen den Nachfolger des zuletzt verwendeten Prompts
+                    target_key = ComfyUI_Prompt_JSON._last_prompt_used
+                    keys_iterator = iter(data.keys())
+                    
+                    # Iterieren, bis wir den alten Prompt finden
+                    for key in keys_iterator:
+                        if key == target_key:
+                            try:
+                                # Der nächste ist der, den wir jetzt benutzen
+                                prompt_name = next(keys_iterator)
+                                break
+                            except StopIteration:
+                                # Wenn wir am Ende der Liste waren, springen wir zum Anfang zurück
+                                prompt_name = next(iter(data.keys()))
+                                break
                 
                 # Falls der alte Schlüssel aus der Liste gelöscht wurde
                 if prompt_name is None:
